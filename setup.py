@@ -8,7 +8,7 @@ long_description = (this_directory / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="my_ezql",
-    version="0.2.4",
+    version="0.2.5",
     description="Using Mysql the easy way",
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -4,8 +4,8 @@
 
 This library was made by Tony Hasson , a 25 year old student of Computer Science.
 
-I made this project because I noticed that I had to use to much SQL queries in Python
-and that didn't seem right to me,so I wanted to make a library that will Mysql more
+I made this project because I noticed that I had to use too much SQL queries in Python
+and that didn't seem right to me,so I wanted to make a library that will make MySQL more
 pythonic and easier to use(hence the name my_ezql).
 
 Feel free to use this library freely and suggest any approvments that come to mind.
