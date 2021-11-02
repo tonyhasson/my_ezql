@@ -10,6 +10,7 @@ Different ways to contact me for any reason ( feel free =] )
 
 linkedIn- https://www.linkedin.com/in/tony-hasson-a14402205/
 GitHub- https://github.com/tonyhasson
+Pypi- https://pypi.org/project/my-ezql/
 
 Thanks for reading and I hope you enjoy the library!
 
@@ -85,8 +86,8 @@ class ezql():
         self.user_password = None  # user password in Mysql connection
         self.database_name = None  # database name in Mysql server
         self.table_name = None  # current table name that the user is addressing
-        self.arithmetic_sign = ['+', '-', '*', '/', '=', '<', '>', '!', '%', '^', '&', '|', '(', ')']
-        self.operator_names = ["AND", "OR"]
+        self.__arithmetic_sign = ['+', '-', '*', '/', '=', '<', '>', '!', '%', '^', '&', '|', '(', ')']
+        self.__operator_names = ["AND", "OR"]
 
     """displaying data about Mysql server connection
     for example: print(sql_obj)                  """
@@ -165,6 +166,8 @@ class ezql():
 
     """for reading data from table"""
 
+
+
     def read_query(self, pandas=False, *col):
 
         cursor = self.connection.cursor()
@@ -178,10 +181,15 @@ class ezql():
 
                 # if the user wanted to recieve data about all of the columns
                 if col[0] == '*':
-                    q1 = """SELECT COLUMN_NAME 
-                        FROM INFORMATION_SCHEMA.COLUMNS
-                        WHERE TABLE_NAME = '""" + str(self.table_name) + """' AND TABLE_SCHEMA='""" + str(
-                        self.database_name) + """'"""
+
+                    ##query for getting all the table cols in right order
+
+                    q1="""SELECT COLUMN_NAME
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE table_name = '""" + str(self.table_name) + """'
+                    AND table_schema='""" + str(
+                        self.database_name) + """'
+                    ORDER BY ORDINAL_POSITION"""
 
                     # get all of the columns
                     cursor.execute(q1)
@@ -231,105 +239,156 @@ class ezql():
     """auto creates an ID that is a primary key and auto increments"""
 
     def create_table(self, table_name, auto_id=True, **cols):
-        self.command("CREATE_TABLE", table_name, auto_id, **cols)
+        self.__command("CREATE_TABLE", table_name, auto_id, **cols)
 
     """deletes selected table from database"""
 
     def delete_table(self, table_name):
-        self.command("DELETE_TABLE", table_name)
+        self.__command("DELETE_TABLE", table_name)
 
     """clears selected table without deleting it"""
 
     def clear_table(self, table_name):
-        self.command("CLEAR_TABLE", table_name)
+        self.__command("CLEAR_TABLE", table_name)
 
     """copies  data from one table to the other"""
     """full_or_empty means that if it is True,copy all of the data,if False,copy only the columns"""
 
     def copy_table(self, table_data_from, table_data_to, full_or_empty=True):
-        self.command("copy_table", table_data_from, table_data_to, full_or_empty)
+        self.__command("copy_table", table_data_from, table_data_to, full_or_empty)
 
-    """operations in command:  
 
-    In this summary of operations of command function I will introduce each argument and their meaning/how to use them.
+    """
+    CRUD operations:
+    
+    In this summary of operations of CRUD functions I will introduce each argument and their meaning/how to use them.
+    
+    function details:
+    
+    (1)  select - 
+             select lets you select data according to what columns you choose and which conditions.
+             enter desired columns into *col and conditions into **conditions.
 
-     (1) type query- type of sql command:
-
-         (1.1) SELECT- select lets you select data according to what columns you choose and which conditions.
-                       enter desired columns into col and conditions into conditions.
-
-             code example: results=sql_obj.command("select","test_ezql","ALL_COL",where=True,pandas_df=True,name="(str)=idk")
+             code example: results=sql_obj.select("test_ezql","ALL_COL",where=True,pandas_df=True,name="(str)=idk")
              in this example you will select all of the columns where name is idk.
 
-             code example:  results=sql_obj.command("select","test_ezql","name","age",pandas_df=True,where=True,age="(int)>=20",c1="AND",c2="(",city="(str)=yavne",c3="OR",gender="(str)!=girl",c4=")")
+             code example:  results=sql_obj.select("test_ezql","name","age",pandas_df=True,where=True,age="(int)>=20",c1="AND",c2="(",city="(str)=yavne",c3="OR",gender="(str)!=girl",c4=")")
              in this long example you will select the name and the age where the age is bigger or greater than 80 and (city is yavne or gender is not a girl)
 
+    (2)  insert -
+            insert lets you insert data to desired columns.
+            enter columns and values into **conditions.
 
+            code example: sql_obj.insert("test_ezql",age="(int)82",name="(str)idk",city="(str)kfar saba")
+            in this example , age=82,name=idk and city=kfar saba will be entered into test_ezql.
+    
+    
+    (3)  update-
+            update lets you update desired data through choosing their columns and matching with conditions.
+            enter columns and values through conditions.
+            **(WARNING! if you omit the where argument,the operation will update all of the table!)**
 
-         (1.2) INSERT- insert lets you insert data to desired columns  
-         enter desired columns into col and conditions into conditions,
-         or you can insert the columns and values from conditions and leave col empty.
-
-            code example: sql_obj.command("insert","new_table1","name","age","city","gender",c1="(str)john",c2="(int)25",c3="(str)new york",c4="(str)boy")
-            in this example, I wrote the columns in col and sent them matching value through conditions(it's important to name them c and then a number).
-
-            code example: sql_obj.command("insert","test_ezql",age="(int)82",name="(str)idk",city="(str)kfar saba")
-            in this example , age=82,name=idk and city=kfar saba will be entered into test_ezql,here I left col empty and used only conditions.
-
-
-
-         (1.3) UPDATE-update lets you update desired data through choosing their columns and matching with conditions.
-                      right now updates only works from entering columns and values through conditions.
-                      **(WARNING! if you omit the where argument,the operation will update all of the table!)**
-
-            code example: sql_obj.command("update","test_ezql",where=True,city="(str)=rehovot",where_cond="where_cond",idnew_table="(int)=11")
+            code example: sql_obj.update("test_ezql",where=True,city="(str)=rehovot",where_cond="where_cond",idnew_table="(int)=11")
             in this example, you will update city to rehovot where idnew_table is 11,the where_cond separates between the value we want to
             update to the condition. 
+            
+    (4)  delete-
+            delete will delete the row wherever he found a matching value,
+            insert columns and values through conditions.
+            **(WARNING! if you omit the where argument,the operation will delete all of the rows in the table!)**
 
-
-
-         (1.4) DELETE-delete will delete the row wherever he found a matching value,
-                      insert columns and values through conditions.
-                      **(WARNING! if you omit the where argument,the operation will delete all of the rows in the table!)**
-
-              code example: sql_obj.command("delete","test_ezql",where=True,name="(str)=idk")
-              in this example,you will delete every row where the name is idk.
-
-
-     (2) table_name-the table_name you want to get/insert data to.
-                    it is important that the table already exists in that database or else the operations won't succeed.
-
-     (3) *col-a python *args object that will contain all of the desired columns.
-              *col is used in SELECT,can be used in INSERT,but is not used in UPDATE and DELETE.
+            code example: sql_obj.delete("test_ezql",where=True,name="(str)=idk")
+            in this example,you will delete every row where the name is idk.
+    
+    
+    More information about those functions arguments:
+    
+    (1)   table_name-
+            the table_name you want to get/insert data to.
+            it is important that the table already exists in that database or else the operations won't succeed.
+    
+    (2)   *col-
+              a python *args object that will contain all of the desired columns.
+              *col is used in only in select function.
               (you can enter '*' or "ALL_COL" if you want to view the data about all of the columns)
 
 
-     (4) pandas- boolean, option to return the result as a pandas dataframe.
+    (3)   pandas_df- 
+                 boolean, option to return the result as a pandas dataframe.
                  this option is defaulted to False,so to activate it simply send True.
+                 pandas_df is used in only in select function.
 
 
-     (5) where- boolean, lets you use where statement.
-                this option is defaulted to False,so to activate it simply send True.
+    (4)   where- 
+                boolean, lets you use where statement.
+                this option is defaulted to False in select,and True in update and delete.
                 used in type_query:select,update and delete.
-                (see warning about update and delete in numbers (1.3) and (1.4))
+                (see warning about update and delete in function details (3) and (4))
 
 
-     (6) **conditions-a python **kwargs object,designed as shown below:
-                      {col/condition_number:"(data type)(combination of arithmetic signs)desired value"} 
+    (5)   **conditions-
+                      a python **kwargs object,designed as shown below:
+                      
+                      **(it is IMPORTANT to note that conditions usage varies between different function types)**
+                      
+                      in select:
+                      
+                          {col/condition_number="(data type)(combination of arithmetic signs)desired value"} 
+    
+                          for example :  city="(str)=yavne",   age="(int)<20"
+    
+                          if you want to use AND/OR you can write them as one of the objects
+                          inside condition with the letter c and a number,and in the value enter AND/OR.
+    
+                          for example :  c1="AND"
+    
+                          you can add parenthesis '(' OR ')' the same way you did for AND/OR to make more complex queries.
+                      
+                      
+                      in insert:
+                      
+                        {col="(data type)desired value"}
+                        for example : age="(int)82" ,   city="(str)kfar saba"
+                        
+                      
+                      in update:
+                      
+                        {col="(data type)(combination of arithmetic signs)desired value"} OR {where_cond="where_cond"}
+                        
+                        for example : city="(str)=rehovot",   where_cond="where_cond",    idnew_table="(int)=11"
+                        
+                        where_cond="where_cond" means that whatever is written afterwards is part of the where condition.
+                      
+                      in delete:                        
+                        {col="(data type)(=)desired value"}
+                        
+                         for example : name="(str)=idk"   ,   idnew_table="(int)=11"
+    """
 
-                      for example :  city="(str)=yavne",age="(int)<20"
 
-                      if you want to use AND/OR you can write them as one of the objects
-                      inside condition with the letter c and a number,and in the value enter AND/OR.
+    def select(self, table_name, *col, pandas_df=False, where=False, **conditions):
+        return self.__command("select",table_name,*col,pandas_df=pandas_df,where=where,**conditions)
 
-                      for example :  c1="AND"
 
-                      you can add parenthesis '(' OR ')' the same way you did for AND/OR to make more complex queries.
+    def insert(self,table_name,**conditions):
+        self.__command("insert",table_name,**conditions)
 
-                      **(it is IMPORTANT to note that conditions usage varies between different type queries)**
-                                                """
 
-    def command(self, type_query, table_name, *col, pandas_df=False, where=False, **conditions):
+    def update(self,table_name,where=True,**conditions):
+        self.__command("update",table_name,where=where,**conditions)
+
+
+    def delete(self,table_name,where=True,**conditions):
+        self.__command("delete", table_name, where=where, **conditions)
+
+
+
+
+    """private inner class helper functions:"""
+
+
+    """many of the other functions are sent to be implemented in this function"""
+    def __command(self, type_query, table_name, *col, pandas_df=False, where=False, **conditions):
 
         # change type query to uppercase(SQL is case sensitive)
         type_query = type_query.upper()
@@ -372,8 +431,8 @@ class ezql():
                 for column, value in conditions.items():
 
                     # if column doesn't start with 'c' and value is not an operator condition(AND,OR,etc..) or arithmetic sign
-                    if str(column)[0] != 'c' or (str(value).upper() not in self.operator_names and str(
-                            value).upper() not in self.arithmetic_sign):
+                    if str(column)[0] != 'c' or (str(value).upper() not in self.__operator_names and str(
+                            value).upper() not in self.__arithmetic_sign):
                         query += str(column)
                         value_cleaned, sign = self.__get_type(value)
                         query += str(sign)  ##add arithmetic sign (=,<,>)
@@ -390,7 +449,6 @@ class ezql():
                 self.query = query
 
             return self.read_query(pandas_df, *col)
-
 
 
         # if chosen type to be INSERT
@@ -425,6 +483,8 @@ class ezql():
                         query += ")"
                     i += 1
 
+
+            ##fixme- need sure if I need entering columns through col and values from condition since changed command function
             ##if entering columns through col and values from condition
             else:
 
@@ -487,7 +547,7 @@ class ezql():
 
 
 
-            ##fixme: try building me next(not sure if need this)
+            ##fixme: (not sure if need this)
             # if entering columns from col and values from condition
             else:
                 for i in range(len(col)):
@@ -514,8 +574,8 @@ class ezql():
                         continue
 
                     """if column doesn't start with 'c' and value is not an operator condition(AND,OR,etc..) or arithmetic sign"""
-                    if str(column)[0] != 'c' or (str(value).upper() not in self.operator_names and str(
-                            value).upper() not in self.arithmetic_sign):
+                    if str(column)[0] != 'c' or (str(value).upper() not in self.__operator_names and str(
+                            value).upper() not in self.__arithmetic_sign):
                         query += str(column)
                         value_cleaned, sign = self.__get_type(value)
                         query += str(sign)  ##add arithmetic sign (=,<,>)
@@ -531,8 +591,6 @@ class ezql():
                 query += ";"
                 self.query = query
                 self.execute_query(type_query)
-
-
 
 
 
@@ -558,8 +616,8 @@ class ezql():
                 for column, value in conditions.items():
 
                     """if column doesn't start with 'c' and value is not an operator condition(AND,OR,etc..) or arithmetic sign"""
-                    if str(column)[0] != 'c' or (str(value).upper() not in self.operator_names and str(
-                            value).upper() not in self.arithmetic_sign):
+                    if str(column)[0] != 'c' or (str(value).upper() not in self.__operator_names and str(
+                            value).upper() not in self.__arithmetic_sign):
                         query += str(column)
                         value_cleaned, sign = self.__get_type(value)
                         query += str(sign)  ##add arithmetic sign (=,<,>)
@@ -667,7 +725,7 @@ class ezql():
         else:
             print("\nUnknown Type Query\n")
 
-    """private inner class helper functions:"""
+
 
     """entering data about Mysql server connection (inner class function)"""
 
@@ -716,7 +774,7 @@ class ezql():
         i += 1
 
         ##building the arithmetic type of the operation
-        while value[i] in self.arithmetic_sign:
+        while value[i] in self.__arithmetic_sign:
             sign += str(value[i])
             i += 1
 
