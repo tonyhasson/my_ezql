@@ -8,7 +8,7 @@ I made this project because I noticed that I had to use too much SQL queries in 
 and that didn't seem right to me,so I wanted to make a library that will make MySQL more
 pythonic and easier to use(hence the name my_ezql).
 
-Feel free to use this library freely and suggest any approvments that come to mind.
+Feel free to use this library freely and suggest any improvements that come to mind.
 
 Different ways to contact me for any reason ( feel free =] )
 
